@@ -1,4 +1,5 @@
 struct Material
+{
     float32_t4 color;
 };
 ConstantBuffer<Material> gMaterial : register(b0);
