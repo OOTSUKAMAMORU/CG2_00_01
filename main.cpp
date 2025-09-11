@@ -142,11 +142,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Vector4));
-Vector4* materialData = nullptr;
-materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
-*materialData = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-
 //windowsアプリでのエントリーポイント
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -408,6 +403,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	descriptionRootSignature.pParameters;
 	descriptionRootSignature.NumParameters = _countof(rootParameters);
 
+
 	//シリアライズしてバイナリにする
 	ID3DBlob* signatureBlob = nullptr;
 	ID3DBlob* errorBlob = nullptr;
@@ -523,6 +519,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	scissorRect.top = 0;
 	scissorRect.bottom = kClientHeight;
 
+	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Vector4));
+	Vector4* materialData = nullptr;
+	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
+	*materialData = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 	
 	//ウィンドウの×ボタンが押されるまでループ
 	while (msg.message != WM_QUIT)
@@ -571,6 +571,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			//形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+			//マテリアルCBufferの場所を設定
+			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+
+			commandList->DrawInstanced(3, 1, 0, 0);
+
 			//描画！。3頂点で１つのインスタンス。インスタンスについては今後
 			commandList->DrawInstanced(3, 1, 0, 0);
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -610,6 +615,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		}
 	}
 	CloseHandle(fenceEvent);
+	materialResource->Release();
 	vertexResource->Release();
 	graphicsPipelineState->Release();
 	signatureBlob->Release();
