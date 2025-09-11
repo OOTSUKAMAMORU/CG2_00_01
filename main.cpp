@@ -306,25 +306,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	assert(fenceEvent != nullptr);
 	//dxCompilerを初期化
 	IDxcUtils* dxcUils = nullptr;
-	IDxcCompiller3* dxcCompiler = nullptr;
+	IDxcCompiler3* dxcCompiler = nullptr;
 	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcUtils));
-	assrt(SUCCEEDED(hr));
+	assert(SUCCEEDED(hr));
 	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
-	assrt(SUCCEEDED(hr));
+	assert(SUCCEEDED(hr));
 	IDxcIncludeHandler* includeHandler = nullptr;
 	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
-	assert(SUCCEEDED(hr))
+	assert(SUCCEEDED(hr));
 		//RootSignature作成
 		D3D12_ROOT_SIGNATURE_DESC dedcriptionRootSignature{};
-	descriptionRootSignature.Flags;
-	D3D12_ROOT_SIIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INIPUT_LAYOUT;
+		descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INIPUT_LAYOUT;
 	//シリアライズしてバイナリにする
 	ID3DBlob* signatrueBlob = nullptr;
 	ID3DBlob* errorBlob = nullptr;
 	hr = D3D12SerializeRootSignature(&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
 	if (FAILED(hr))
 	{
-		LOG(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+		Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
 		assert(false);
 	}
 	//バイナリを元に生成
@@ -354,10 +353,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	IDxcBlob* vertexShaderBlob = CompileShader(L"Object3D.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(vertexShaderBlob != nullptr);
 
-	IDxcBlob* pixelShaderBlob = Compi;eShader(L"Object3D.ps.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	IDxcBlob* pixelShaderBlob = CompileShader(L"Object3D.ps.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(pixelShaderBlob != nullptr);
 
-	D3D12_GRAPHICSPIPELINE_STaTE_DESC graphicsPipelineStateDesc{};
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 	graphicsPipelineStateDesc.pRootSignature = rootSignature;
 	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;
 	graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),vertexShaderBlob->GetBufferSize() };
@@ -367,12 +366,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	graphicsPipelineStateDesc.BlendState = blendDesc;
 	//書き込むRTVの情報
 	graphicsPipelineStateDesc.NumRenderTargets = 1;
-	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8GBA_UNORM_SRGB;
+	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 
 	//利用するトポロジ(形状)のタイプ。三角形
-	graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOOGY_TYPE_TRIANGLE;
+	graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	//どのように画面に色を打ち込むかの設定
-	graphicsPipelineStateDEsc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
+	graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
 	//実際に生成
 	ID3D12PipelineState* graphicsPipelineState = nullptr;
 	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
@@ -397,13 +396,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	vertexResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
 	//実際に頂点リソースを作る
-	ID3D12ResourceDesc* vertexResource = nullptr;
+	ID3D12Resource* vertexResource = nullptr;
 
-	hr = device->CreateCommittedResource(&uploadHeapPropertoes, D3D12_HEAP_FLAG_NONE, &vertexResourceDesc, D3D12_RESOUCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexResource));
+	hr = device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE, &vertexResourceDesc, D3D12_RESOUCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexResource));
 	assert(SUCCEEDED(hr));
 
 	//頂点バッファビューを作成する
-	D3D21_VERTEX_BUFFER_VIEW vertexBufferView{};
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 
 	//リソースの先頭のアドレスから使う
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
@@ -447,12 +446,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	scissorRect.top = 0;
 	scissorRect.botton = kClientHeight;
 
-	commandList->RSSeetViewports(1, &viewport);
+	commandList->RSSetViewports(1, &viewport);
 	commandList->RSSetScissorRects(1, &scissorRect);
 
 	//RootSignatureを設定。PSOに設定せているけど別途設定が必要
-	commandList->SetgraphicsRooSignature(rootSignature);
-	commandList->SetPipelineState(graphicsPipelineAtate);
+	commandList->SetGraphicsRooSignature(rootSignature);
+	commandList->SetPipelineState(graphicsPipelineState);
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 
 	//形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
@@ -462,9 +461,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	commandList->DrawInstanced(3, 1, 0, 0);
 
 	vertexResource->Release();
-	graphicsPipelineState->Releaselease();
+	graphicsPipelineState->Release();
 	signatureBlob->release();
-	if)(errorBlob)
+	if(errorBlob)
 	{
 		errorBlob->Release();
 	}
