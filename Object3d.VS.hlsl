@@ -9,7 +9,6 @@ struct VertexShaderInput
 VertexShaderOutput main(VertexShaderInput input)
 {
     VertexShaderOutput output;
-    output.position = output;
-    GetRenderTargetSamplePosition;
+    output.position = input.position;
     return output;
 }
