@@ -332,6 +332,19 @@ ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes)
 	assert(SUCCEEDED(hr));
 	return vertexResource;
 }
+//DescriptorHeapの作成関数
+ID3D12DescriptorHeap* CreateDescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDesceriptors, bool shaderVisible)
+{
+	ID3D12DescriptorHeap* descriptorHeap = nullptr;
+	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc{};
+	descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	descriptorHeapDesc.NumDescriptors = 2;
+	HRESULT hr = device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap));
+
+	//ディスクリプタヒープが作れなかったので起動出来ない
+	assert(SUCCEEDED(hr));
+	return descriptorHeap;
+}
 
 //ウィンドウプロージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -531,18 +544,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//assert(SUCCEEDED(hr));
 
 	//コマンドキュー、ウィンドウハンドル、設定を渡して生成する
-	//hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue, hwnd, &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(&swapChain));
-	//assert(SUCCEEDED(hr));
+	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue, hwnd, &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(&swapChain));
+	assert(SUCCEEDED(hr));
 
 	//ディスクリプタヒープの生成
-	ID3D12DescriptorHeap* rtvDescriptorHeap = nullptr;
-	D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc{};
-	rtvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-	rtvDescriptorHeapDesc.NumDescriptors = 2;
-	hr = device->CreateDescriptorHeap(&rtvDescriptorHeapDesc, IID_PPV_ARGS(&rtvDescriptorHeap));
-
+	//ID3D12DescriptorHeap* rtvDescriptorHeap = nullptr;
+	//D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc{};
+	//rtvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	//rtvDescriptorHeapDesc.NumDescriptors = 2;
+	//hr = device->CreateDescriptorHeap(&rtvDescriptorHeapDesc, IID_PPV_ARGS(&rtvDescriptorHeap));
 	//ディスクリプタヒープが作れなかったので起動出来ない
-	assert(SUCCEEDED(hr));
+	//assert(SUCCEEDED(hr));
+
+	ID3D12DescriptorHeap* rtvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 2, false);
 
 	//SwapChaiからResourceを引っ張ってくる
 	ID3D12Resource* swapChainResources[2] = { nullptr };

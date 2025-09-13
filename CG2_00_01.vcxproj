@@ -93,6 +93,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imgui.cpp" />
+    <ClCompile Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imgui_demo.cpp" />
+    <ClCompile Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imgui_draw.cpp" />
+    <ClCompile Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imgui_tables.cpp" />
+    <ClCompile Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -108,6 +113,22 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\.editorconfig" />
+    <None Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\.gitattributes" />
+    <None Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\.gitignore" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imconfig.h" />
+    <ClInclude Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imgui.h" />
+    <ClInclude Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imgui_internal.h" />
+    <ClInclude Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imstb_rectpack.h" />
+    <ClInclude Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imstb_textedit.h" />
+    <ClInclude Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imstb_truetype.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\LICENSE.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
