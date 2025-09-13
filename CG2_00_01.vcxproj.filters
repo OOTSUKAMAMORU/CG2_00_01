@@ -21,19 +21,19 @@
     <ClCompile Include="main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imgui.cpp">
+    <ClCompile Include="externals\imgui\imgui.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imgui_demo.cpp">
+    <ClCompile Include="externals\imgui\imgui_demo.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imgui_draw.cpp">
+    <ClCompile Include="externals\imgui\imgui_draw.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imgui_tables.cpp">
+    <ClCompile Include="externals\imgui\imgui_tables.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imgui_widgets.cpp">
+    <ClCompile Include="externals\imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
   </ItemGroup>
@@ -42,38 +42,27 @@
     <FxCompile Include="Object3d.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\.editorconfig">
-      <Filter>imgui</Filter>
-    </None>
-    <None Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\.gitattributes">
-      <Filter>imgui</Filter>
-    </None>
-    <None Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\.gitignore">
-      <Filter>imgui</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imconfig.h">
+    <ClInclude Include="externals\imgui\imconfig.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imgui.h">
+    <ClInclude Include="externals\imgui\imgui.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imgui_internal.h">
+    <ClInclude Include="externals\imgui\imgui_internal.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imstb_rectpack.h">
+    <ClInclude Include="externals\imgui\imstb_rectpack.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imstb_textedit.h">
+    <ClInclude Include="externals\imgui\imstb_textedit.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\imstb_truetype.h">
+    <ClInclude Include="externals\imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\..\Downloads\imgui-1.89.4\imgui-1.89.4\LICENSE.txt">
+    <Text Include="externals\imgui\LICENSE.txt">
       <Filter>imgui</Filter>
     </Text>
   </ItemGroup>
