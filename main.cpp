@@ -14,6 +14,7 @@
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
+#include "externals/DirectXTex/DirectXTex.h"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 struct Vector4
@@ -349,6 +350,19 @@ ID3D12DescriptorHeap* CreateDescriptorHeap(
 	assert(SUCCEEDED(hr));
 	return descriptorHeap;
 }
+//1 Textureデータを読む
+DirectX::ScratchImage LoadTexture(const std::string& filePath)
+{
+	DirectX::ScratchImage image{};
+	std::wstring filePathW = ConvertString(filePath);
+	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
+	assert(SUCCEEDED(hr));
+
+	//ミップマップの生成
+	DirectX::ScratchImage mipImages{};
+	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount, image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
+	return mipImages;
+}
 
 //ウィンドウプロージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -373,6 +387,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 //windowsアプリでのエントリーポイント
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
+	CoInitializeEx(0, COINIT_MULTITHREADED);
 	Log(ConvertString(std::format(L"WSTRING{}/n", L"abc")));
 	//クライアント領域のサイズ
 	const int32_t kClientWidth = 1200;
@@ -929,5 +944,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
 		debug->Release();
 	}
+	CoUninitialize();
 	return 0;
 }
