@@ -400,7 +400,7 @@ ID3D12Resource* CreteTextureResource(ID3D12Device* device, const DirectX::TexMet
 void UploadTexTureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages)
 {
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
-	for(size_t mipLevel = 0;mipLevel < metadata.miscFlags;++mipLevel)
+	for (size_t mipLevel = 0; mipLevel < metadata.mipLevels; ++mipLevel)
 	{
 		const DirectX::Image* img = mipImages.GetImage(mipLevel, 0, 0);
 		HRESULT hr = texture->WriteToSubresource(UINT(mipLevel), nullptr, img->pixels, UINT(img->rowPitch), UINT(img->slicePitch));
@@ -841,7 +841,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Vector4));
 	Vector4* materialData = nullptr;
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
-	*materialData = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+	*materialData = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	
 	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(Matrix4x4));
 	Matrix4x4* wvpData = nullptr;
