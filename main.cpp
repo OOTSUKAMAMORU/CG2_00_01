@@ -89,6 +89,14 @@ Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 	return result;
 }
 
+Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip)
+{
+	return
+	{
+		2.0f / (right - left),0.0f,0.0f,0.0f,0.0f,2.0f / (top - bottom),0.0f,0.0f,0.0f,0.0f,1.0f / (farClip - nearClip),0.0f,(left + right) / (left - right),(top + bottom) / (bottom - top) / (nearClip - farClip),1.0f,
+	};
+}
+
 // X軸で回転
 Matrix4x4 MakeRotateXMatrix(float radian) {
 	float cosTheta = std::cos(radian);
@@ -924,6 +932,35 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	device->CreateDepthStencilView(depthStencilResource, &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
+	//Spriteの頂点リソースを作る
+	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
+	vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
+	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;
+	vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
+	VertexData* vertexDataSprite = nullptr;
+	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
+	//1枚目の三角形
+	vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };
+	vertexDataSprite[0].texcoord = { 0.0f,1.0f };
+	vertexDataSprite[1].position = { 0.0f,0.0f,0.0f,1.0f };
+	vertexDataSprite[1].texcoord = { 0.0f,0.0f };
+	vertexDataSprite[2].position = { 640.0f,360.0f,0.0f,1.0f };
+	vertexDataSprite[2].texcoord = { 1.0f,1.0f };
+	//2枚目の三角形
+	vertexDataSprite[3].position = { 0.0f,360.0f,0.0f,1.0f };
+	vertexDataSprite[3].texcoord = { 0.0f,1.0f };
+	vertexDataSprite[4].position = { 0.0f,0.0f,0.0f,1.0f };
+	vertexDataSprite[4].texcoord = { 0.0f,0.0f };
+	vertexDataSprite[5].position = { 640.0f,360.0f,0.0f,1.0f };
+	vertexDataSprite[5].texcoord = { 1.0f,1.0f };
+
+	ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(Matrix4x4));
+	Matrix4x4* transformationMatrixDataSprite = nullptr;
+	transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSprite));
+	*transformationMatrixDataSprite = MakeIdentity4x4();
+	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+
 	//ウィンドウの×ボタンが押されるまでループ
 	while (msg.message != WM_QUIT)
 	{
@@ -934,6 +971,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			DispatchMessage(&msg);
 		} else
 		{
+			
+			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
+			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
+			Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
+			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite,Multiply(viewMatrixSprite,projectionMatrixSprite));
+
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
@@ -1007,6 +1050,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			//描画！。3頂点で１つのインスタンス。インスタンスについては今後
 			commandList->DrawInstanced(6, 1, 0, 0);
 			
+			//Spriteの描画
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+			commandList->DrawInstanced(6, 1, 0, 0);
+
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -1077,6 +1125,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	textureResource->Release();
 	depthStencilResource->Release();
 	dsvDescriptorHeap->Release();
+	vertexResourceSprite->Release();
+	transformationMatrixResourceSprite->Release();
 #ifdef _DEBUG
 	debugCountroller->Release();
 #endif // _DEBUG
