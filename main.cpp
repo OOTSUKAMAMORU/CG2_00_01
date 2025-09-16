@@ -15,6 +15,8 @@
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
 #include "externals/DirectXTex/DirectXTex.h"
+#include <fstream>
+#include <sstream>
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 struct Vector2
@@ -51,6 +53,11 @@ struct VertexData
 {
 	Vector4 position;
 	Vector2 texcoord;
+};
+
+struct ModelData
+{
+	std::vector<VertexData> vertices;
 };
 
 // 単位行列
@@ -442,12 +449,71 @@ void UploadTexTureData(ID3D12Resource* texture, const DirectX::ScratchImage& mip
 		assert(SUCCEEDED(hr));
 	}
 }
-
+//Obj読み込み関数
+ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename)
+{
+	//1
+	ModelData modelData;
+	std::vector<Vector4> positions;
+	std::vector<Vector3> normals;
+	std::vector<Vector2> texcoords;
+	std::string line;
+	//2
+	std::ifstream file(directoryPath + "/" + filename);
+	assert(file.is_open());
+	//3
+	while (std::getline(file, line))
+	{
+		std::string identifier;
+		std::istringstream s(line);
+		s >> identifier;
+		//identifierに応じた処理
+		if (identifier == "v")
+		{
+			Vector4 position;
+			s >> position.x >> position.y >> position.z;
+			position.w = 1.0f;
+			positions.push_back(position);
+		} else if (identifier == "vt")
+		{
+			Vector2 texcoord;
+			s >> texcoord.x >> texcoord.y;
+			texcoords.push_back(texcoord);
+		} else if (identifier == "vn")
+		{
+			Vector3 normal;
+			s >> normal.x >> normal.y >> normal.z;
+			normals.push_back(normal);
+		} else if (identifier == "f")
+		{
+			for (int32_t faceVertex = 0;faceVertex < 3;++faceVertex)
+			{
+				std::string vertexDefinition;
+				s >> vertexDefinition;
+				std::istringstream v(vertexDefinition);
+				uint32_t elementIndices[3];
+				for (int32_t element = 0; element < 3;++element)
+				{
+					std::string index;
+					std::getline(v, index, '/');
+					elementIndices[element] = std::stoi(index);
+				}
+				Vector4 position = positions[elementIndices[0] - 1];
+				Vector2 texcood = texcoords[elementIndices[0] - 1];
+				Vector3 normal = normals[elementIndices[0] - 1];
+				VertexData vertex = { position,texcood };
+				modelData.vertices.push_back(vertex);
+			}
+		}
+	}
+	//4
+	return modelData;
+}
 
 //ウィンドウプロージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-	if (ImGui_ImplWin32_WndProcHandler(hwnd,msg,wparam,lparam))
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam))
 	{
 		return true;
 	}
@@ -815,7 +881,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//どのように画面に色を打ち込むかの設定
 	graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-	
+
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
 	depthStencilDesc.DepthEnable = true;depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
@@ -833,7 +899,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
 
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
-	
+
 	//頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 
@@ -857,7 +923,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//左下2
 	vertexData[3].position = { -0.5f,-0.5f,0.5f,1.0f };
 	vertexData[3].texcoord = { 0.0f,1.0f };
-	
+
 	//上
 	vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
 	vertexData[1].texcoord = { 0.5f,0.0f };
@@ -895,7 +961,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	Vector4* materialData = nullptr;
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 	*materialData = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	
+
 	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(Matrix4x4));
 	Matrix4x4* wvpData = nullptr;
 	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
@@ -925,7 +991,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	textureSrvHandleCPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	textureSrvHandleGPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	device->CreateShaderResourceView(textureResource, &srvDesc, textureSrvHandleCPU);
-	
+
 	ID3D12Resource* depthStencilResource = CreateDepthStencilTexTureResource(device, kClientWidth, kClientHeight);
 	ID3D12DescriptorHeap* dsvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
 	//DSVの設定
@@ -969,7 +1035,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
 	indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
 	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
-	
+
 
 	//インデックスリソースにデータを書き込む
 	uint32_t* indexDataSprite = nullptr;
@@ -991,7 +1057,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
 			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
 			Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
-			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite,Multiply(viewMatrixSprite,projectionMatrixSprite));
+			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
 			*transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
 
 			ImGui_ImplDX12_NewFrame();
@@ -1068,7 +1134,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			//描画！。3頂点で１つのインスタンス。インスタンスについては今後
 			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
-			
+
 			//Spriteの描画
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
