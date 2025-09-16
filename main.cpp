@@ -969,6 +969,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
 	indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
 	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
+	
 
 	//インデックスリソースにデータを書き込む
 	uint32_t* indexDataSprite = nullptr;
