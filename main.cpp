@@ -486,6 +486,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 			normals.push_back(normal);
 		} else if (identifier == "f")
 		{
+			VertexData triangle[3];
 			for (int32_t faceVertex = 0;faceVertex < 3;++faceVertex)
 			{
 				std::string vertexDefinition;
@@ -499,11 +500,18 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 					elementIndices[element] = std::stoi(index);
 				}
 				Vector4 position = positions[elementIndices[0] - 1];
-				Vector2 texcood = texcoords[elementIndices[0] - 1];
-				Vector3 normal = normals[elementIndices[0] - 1];
-				VertexData vertex = { position,texcood };
-				modelData.vertices.push_back(vertex);
+				position.x *= -1.0f;
+				Vector2 texcoord = texcoords[elementIndices[1] - 1];
+				Vector3 normal = normals[elementIndices[2] - 1];
+				//normal.x *= -1.0f;
+				VertexData vertex = { position,texcoord };
+				//modelData.vertices.push_back(vertex);
+				//triangle[faceVertex] = { position,texcoord,normal };
+				triangle[faceVertex] = { position,texcoord };
 			}
+			modelData.vertices.push_back(triangle[2]);
+			modelData.vertices.push_back(triangle[1]);
+			modelData.vertices.push_back(triangle[0]);
 		}
 	}
 	//4
@@ -951,7 +959,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 	std::memcpy(vertexData, modelData.vertices.data(), sizeof(vertexData)* modelData.vertices.size());
 
-	//commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+	commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
 	//ビューポート
 	D3D12_VIEWPORT viewport{};
