@@ -55,9 +55,15 @@ struct VertexData
 	Vector2 texcoord;
 };
 
+struct MaterialData
+{
+	std::string textureFilePth;
+};
+
 struct ModelData
 {
 	std::vector<VertexData> vertices;
+	MaterialData material;
 };
 
 // 単位行列
@@ -449,6 +455,37 @@ void UploadTexTureData(ID3D12Resource* texture, const DirectX::ScratchImage& mip
 		assert(SUCCEEDED(hr));
 	}
 }
+
+//MaterialData構造体と読み込み関数
+MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename)
+{
+	//1
+	MaterialData materialData;
+	std::string line;
+
+	//2
+	std::ifstream file(directoryPath+"/"+filename);
+	assert(file.is_open());
+
+	//3
+	while (std::getline(file, line))
+	{
+		std::string identifier;
+		std::istringstream s(line);
+		s >> identifier;
+		if (identifier == "map_Kd")
+		{
+			std::string textureFilename;
+			s >> textureFilename;
+			materialData.textureFilePth = directoryPath + "/" + textureFilename;
+		}
+	}
+
+	//4
+	return materialData;
+}
+
+
 //Obj読み込み関数
 ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename)
 {
@@ -502,6 +539,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 				Vector4 position = positions[elementIndices[0] - 1];
 				position.x *= -1.0f;
 				Vector2 texcoord = texcoords[elementIndices[1] - 1];
+				texcoord.y = 1.0f - texcoord.y;
 				Vector3 normal = normals[elementIndices[2] - 1];
 				//normal.x *= -1.0f;
 				VertexData vertex = { position,texcoord };
@@ -512,6 +550,12 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 			modelData.vertices.push_back(triangle[2]);
 			modelData.vertices.push_back(triangle[1]);
 			modelData.vertices.push_back(triangle[0]);
+		}
+		else if (identifier=="mtllib")
+		{
+			std::string materialFilename;
+			s >> materialFilename;
+			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);
 		}
 	}
 	//4
@@ -957,9 +1001,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//頂点リソースにデータを書き込む
 	VertexData* vertexData = nullptr;
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	std::memcpy(vertexData, modelData.vertices.data(), sizeof(vertexData)* modelData.vertices.size());
-
-	commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());
 
 	//ビューポート
 	D3D12_VIEWPORT viewport{};
@@ -999,7 +1041,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	ImGui_ImplWin32_Init(hwnd);
 	ImGui_ImplDX12_Init(device, swapChainDesc.BufferCount, rtvDesc.Format, srvDescriptorHeap, srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
-	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
+	//テクスチャ
+	DirectX::ScratchImage mipImages = LoadTexture(modelData.material.textureFilePth);
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
 	ID3D12Resource* textureResource = CreteTextureResource(device, metadata);
 	UploadTexTureData(textureResource, mipImages);
@@ -1017,6 +1060,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	ID3D12Resource* depthStencilResource = CreateDepthStencilTexTureResource(device, kClientWidth, kClientHeight);
 	ID3D12DescriptorHeap* dsvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
+	
+	
+
 	//DSVの設定
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -1156,7 +1202,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			commandList->IASetIndexBuffer(&indexBufferViewSprite);
 
 			//描画！。3頂点で１つのインスタンス。インスタンスについては今後
-			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
 			//Spriteの描画
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
