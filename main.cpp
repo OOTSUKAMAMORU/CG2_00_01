@@ -20,24 +20,28 @@ struct Vector4
 	float w;
 };
 
-struct Matrix4x4 {
+struct Matrix4x4 
+{
 	float m[4][4];
 };
 
-struct Vector3 {
+struct Vector3 
+{
 	float x;
 	float y;
 	float z;
 };
 
-struct Transform {
+struct Transform 
+{
 	Vector3 scale;
 	Vector3 rotate;
 	Vector3 translate;
 };
 
 // 単位行列
-Matrix4x4 MakeIdentity4x4() {
+Matrix4x4 MakeIdentity4x4() 
+{
 	Matrix4x4 identity;
 	identity.m[0][0] = 1.0f;	identity.m[0][1] = 0.0f;	identity.m[0][2] = 0.0f;	identity.m[0][3] = 0.0f;
 	identity.m[1][0] = 0.0f;	identity.m[1][1] = 1.0f;	identity.m[1][2] = 0.0f;	identity.m[1][3] = 0.0f;
