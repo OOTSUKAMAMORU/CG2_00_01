@@ -17,6 +17,10 @@
 #include "externals/DirectXTex/DirectXTex.h"
 #include <fstream>
 #include <sstream>
+#define DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
+#pragma comment(lib,"dinput8.lib")
+#pragma comment(lib,"dxguid.lib")
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 struct Vector2
@@ -48,7 +52,6 @@ struct Transform {
 	Vector3 rotate;
 	Vector3 translate;
 };
-
 struct VertexData
 {
 	Vector4 position;
@@ -422,6 +425,7 @@ DirectX::ScratchImage LoadTexture(const std::string& filePath)
 	DirectX::ScratchImage mipImages{};
 	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
 	return mipImages;
+
 }
 ID3D12Resource* CreteTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata)
 {
@@ -454,6 +458,20 @@ void UploadTexTureData(ID3D12Resource* texture, const DirectX::ScratchImage& mip
 		HRESULT hr = texture->WriteToSubresource(UINT(mipLevel), nullptr, img->pixels, UINT(img->rowPitch), UINT(img->slicePitch));
 		assert(SUCCEEDED(hr));
 	}
+}
+
+int WINAPIWinMain(HINSTANCE, HINSTANCE,LPSTR,int)
+{
+	//DirectInputの初期化
+	IDirectInput8* direcInput = nullptr;
+	result = DirectInput8Create(w.hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
+	assert(SUCCEEDED(result));
+	IDirectInputDevice8* keyboard = nullptr;
+	result = direcInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
+	assert(SUCCEEDED(result));
+	result = keeyboard->SetDataFormat(&c_dfDIKeyboard);
+	assert(SUCCEEDED(result));
+
 }
 
 //MaterialData構造体と読み込み関数
