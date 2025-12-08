@@ -7,6 +7,7 @@
 #include<cassert>
 #include<dxgidebug.h>
 #include<dxcapi.h>
+#include <cassert>
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"d3d12.lib")
 #pragma	comment(lib,"dxgi.lib")
@@ -15,6 +16,7 @@
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
 #include "externals/DirectXTex/DirectXTex.h"
+#include "Input.h"
 #include <fstream>
 #include <sstream>
 #define DIRECTINPUT_VERSION 0x0800
@@ -162,11 +164,11 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 
 	result.m[3][0] = translate.x;
 	result.m[3][1] = translate.y;
-	result.m[3][2] = translate.z;
+	result.m[3][
+
+2] = translate.z;
 	return result;
 }
-
-
 Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip)
 {
 	float cotHalfFovV = 1.0f / std::tan(fovY / 2.0f);
@@ -368,8 +370,6 @@ IDxcBlob* CompileShader(const std::wstring& filePath, const wchar_t* profile, ID
 	shaderResult->Release();
 	//実行用のバイナリを返却
 	return shaderBlob;
-
-
 }
 
 ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes)
@@ -460,18 +460,52 @@ void UploadTexTureData(ID3D12Resource* texture, const DirectX::ScratchImage& mip
 	}
 }
 
-int WINAPIWinMain(HINSTANCE, HINSTANCE,LPSTR,int)
+int WINAPI WinMain(HINSTANCE, HINSTANCE,LPSTR,int)
 {
 	//DirectInputの初期化
 	IDirectInput8* direcInput = nullptr;
 	result = DirectInput8Create(w.hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
 	assert(SUCCEEDED(result));
+
+	//キーボードデバイスの生成
 	IDirectInputDevice8* keyboard = nullptr;
 	result = direcInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
 	assert(SUCCEEDED(result));
+
+	//入力データ形式のセット
 	result = keeyboard->SetDataFormat(&c_dfDIKeyboard);
 	assert(SUCCEEDED(result));
 
+	//排他制御レベルのセット
+	result = keyboard->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
+	assert(SUCCEEDED(result));
+
+	//ポインタ
+	Input* input = nullptr;
+
+	//入力の初期化
+	input = new Input();
+	input->Initialize();
+
+	//入力解放
+	delete input;
+
+	//ゲームループ
+	while (true)
+	{
+		//キーボード情報の取得開始
+		keyboard->Acquire();
+
+		//全キーの入力状態を取得
+		BYTE key[256] = {};
+		keyboard->GetForceFeedbackState(sizeof(key), key);
+
+		//数字の0キーが押されていたなら
+		if (key[DIK_0])
+		{
+			OutputDebugStringA("Hit 0/n");
+		}
+	}
 }
 
 //MaterialData構造体と読み込み関数
