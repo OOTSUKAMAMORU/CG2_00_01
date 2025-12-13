@@ -1,25 +1,54 @@
 #include"Input.h"
-#include <wrl.h>
-#include <dinput.h>
-#define DIRECTINPUT_VERSION 0x0800
-void Input::Initialize()
+#include <cassert>
+#pragma comment(lib,"dinput8.lib")
+#pragma comment(lib,"dxguid.lib")
+void Input::Initialize(winApp* winApp)
 {
+	//借りてきたWinAppのインスタンスを記録
+	this->winApp = winApp;
+
+	HRESULT result;
 	//DirectInputのインスタンス生成
-	ComPtr<IDirectInput8>directInput = nullptr;
-	result = DirectInput8Create(hInstance, DIRECTINPUT_VERSION, IID_IDirectInputput8, (void**)&directInput, nullptr);
+	Microsoft::WRL::ComPtr<IDirectInput8>directInput = nullptr;
+	result = DirectInput8Create(winApp->GetHInstance(),DIRECTINPUT_VERSION IID_IDirectInput8, (void**)&diput, nullptr);
 	assert(SUCCEDED(result));
+	
 	//キーボードデバイス生成
-	ComPtr<IDirectInputDevice8>keyboard;
-	result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
+	result = diput->CreateDevice(GUID_SysKeyboard, &devkeyboard, NULL);
 	assert(SUCCEEDED(result));
+	
 	//入力データ形式のセット
-	result = keyboard->SetDataFormat(&c_dfDIKeyboard);
+	result = devkeyboard->SetDataFormat(&c_dfDIKeyboard);
 	assert(SUCCEEDED(result));
+
 	//排他制御レベルのセット
-	result = keyboard->SetCooperativeLevel(hwnd, DISCLFOREGROUND | DISCL_NOWINKEY);
+	result = devkeyboard->SetCooperativeLevel(winApp->GetH DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
 	assert(SUCCEEDED(result));
 }
 void Input::Update()
 {
+	//前回のキー入力を保存
+	memcpy(keyPre, key, sizeof(key));
 
+	keyboard->Acquire();
+	keyboard->GetDeviceState(sizeof(key), key);
+}
+
+bool Input::PushKey(BYTE keyNumber)
+{
+	if (key[keyNumber])
+	{
+
+		return true;
+	}
+	return false;
+}
+bool Input::TriggerKey(BYTE keyNumber)
+{
+		if (key[keyNumber]&&!keyPre[keyNumber])
+		{
+			return true;
+		}
+		return false;
+	return false;
 }

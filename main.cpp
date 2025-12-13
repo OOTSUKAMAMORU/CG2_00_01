@@ -17,6 +17,7 @@
 #include "externals/imgui/imgui_impl_win32.h"
 #include "externals/DirectXTex/DirectXTex.h"
 #include "Input.h"
+#include "WinApp.h"
 #include <fstream>
 #include <sstream>
 #define DIRECTINPUT_VERSION 0x0800
@@ -482,10 +483,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE,LPSTR,int)
 
 	//ポインタ
 	Input* input = nullptr;
+	WinApp* winApp = nullptr;
 
 	//入力の初期化
 	input = new Input();
-	input->Initialize();
+	input->Initialize(winApp);
+
+	//WindowsAPIの初期化
+	winApp = new WinApp();
+	winApp->Initialize();
+
+	//WindowsAPI解放
+	delete winApp;
+
+	//入力の更新
+	input->Update();
 
 	//入力解放
 	delete input;
@@ -493,6 +505,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE,LPSTR,int)
 	//ゲームループ
 	while (true)
 	{
+		//Windowsのメッセージ処理
+		if (winApp->ProcessMessage())
+		{
+			break;
+		}
+
 		//キーボード情報の取得開始
 		keyboard->Acquire();
 
@@ -501,11 +519,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE,LPSTR,int)
 		keyboard->GetForceFeedbackState(sizeof(key), key);
 
 		//数字の0キーが押されていたなら
-		if (key[DIK_0])
+		if (input->PushKey(DIK_0))
 		{
 			OutputDebugStringA("Hit 0/n");
 		}
 	}
+	HWND hwnd = CreateWindow(
+		wc.lpszClassName,
+		L"CG2",
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		wrc.right - wrc.left,
+		wrc.bottom - wrc.top,
+		nullptr,
+		nullptr,
+		wc.hInstance,
+		nullptr
+	);
+
+	//自分で考える
 }
 
 //MaterialData構造体と読み込み関数
@@ -648,22 +681,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//クライアント領域をもとに実際のサイズにwrcを変更してもらう
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
-	WNDCLASS wc{};
-
-	//ウィンドウプロシージャ
-	wc.lpfnWndProc = WindowProc;
-
-	//ウィンドウクラス名(なんでも良い)
-	wc.lpszClassName = L"CG2WindowClass";
-
-	//インスタンスハンドル
-	wc.hInstance = GetModuleHandle(nullptr);
-
-	//カーソル
-	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-
-	//ウィンドウクラスを登録する
-	RegisterClass(&wc);
+	
 
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("Hello,DirectX!\n");
@@ -672,19 +690,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 
 	//ウィンドウの生成
-	HWND hwnd = CreateWindow(
-		wc.lpszClassName,
-		L"CG2",
-		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		wrc.right - wrc.left,
-		wrc.bottom - wrc.top,
-		nullptr,
-		nullptr,
-		wc.hInstance,
-		nullptr
-	);
+	
 #ifdef _DEBUG
 	ID3D12Debug1* debugCountroller = nullptr;
 
@@ -771,6 +777,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//解放
 		infoQueue->Release();
 
+		//WindowsAPIの終了処理
+		winApp->Finalize();
 	}
 
 #endif
@@ -797,8 +805,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//スワップチェーンを生成する
 	IDXGISwapChain4* swapChain = nullptr;
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
-	swapChainDesc.Width = kClientWidth;
-	swapChainDesc.Height = kClientHeight;
+	swapChainDesc.Width = WinApp::kCientWidth;
+	swapChainDesc.Height = WinApp::kClientHeight;
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
