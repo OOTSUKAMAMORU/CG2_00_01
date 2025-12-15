@@ -28,5 +28,6 @@ public://メンバ関数
 	bool PushKey(BYTE keyNumber);
 	bool TriggerKey(BYTE keyNumber);
 private:
+	//WindowsAPI
 	WinApp* winApp_ = nullptr;
 };

@@ -2,10 +2,10 @@
 #include <cassert>
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
-void Input::Initialize(winApp* winApp)
+void Input::Initialize(WinApp* winApp)
 {
 	//借りてきたWinAppのインスタンスを記録
-	this->winApp = winApp;
+	this->winApp_ = winApp;
 
 	HRESULT result;
 	//DirectInputのインスタンス生成
@@ -14,7 +14,7 @@ void Input::Initialize(winApp* winApp)
 	assert(SUCCEDED(result));
 	
 	//キーボードデバイス生成
-	result = diput->CreateDevice(GUID_SysKeyboard, &devkeyboard, NULL);
+	result = dinput->CreateDevice(GUID_SysKeyboard, &devkeyboard, NULL);
 	assert(SUCCEEDED(result));
 	
 	//入力データ形式のセット
@@ -22,7 +22,7 @@ void Input::Initialize(winApp* winApp)
 	assert(SUCCEEDED(result));
 
 	//排他制御レベルのセット
-	result = devkeyboard->SetCooperativeLevel(winApp->GetH DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
+	result = devkeyboard->SetCooperativeLevel(winApp->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
 	assert(SUCCEEDED(result));
 }
 void Input::Update()
@@ -50,5 +50,4 @@ bool Input::TriggerKey(BYTE keyNumber)
 			return true;
 		}
 		return false;
-	return false;
 }

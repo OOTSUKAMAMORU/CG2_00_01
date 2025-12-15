@@ -1,6 +1,8 @@
 #include "WinApp.h"
 void WinApp::Initialize()
 {
+	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
+	WNDCLASS wc{};
 	//ウィンドウプロシージャ
 	wc.lpfnWndProc = WindowProc;
 
@@ -13,9 +15,18 @@ void WinApp::Initialize()
 	//カーソル
 	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 
-	//ウィンドウクラスを登録する
 	RegisterClass(&wc);
 
+	const int32_t kClientWidth = 1280;
+	const int32_t kClientHeight = 720;
+
+	//ウィンドウサイズを表す構造体にクライアント領域を入れる
+	RECT wrc = { 0,0,kClientWidth,kClientHeight };
+
+	//ウィンドウクラスを登録する
+	RegisterClass(&wc);
+	HWND hwnd = CreateWindow(
+		wc.lpszClassName,
 		L"CG2",
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
@@ -40,14 +51,15 @@ void WinApp::Finalize()
 bool WinApp::ProcessMessage()
 {
 	MSG msg{};
-	if (PeekMessage(msg,nullptr,0,0,PM_REMOVE))
+	if (PeekMessage(msg, nullptr, 0, 0, PM_REMOVE))
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-	if (msg.message==WM_QUIT)
+	if (msg.message == WM_QUIT)
 	{
 		return true;
 	}
 	return false;
+	//自分で考える
 }

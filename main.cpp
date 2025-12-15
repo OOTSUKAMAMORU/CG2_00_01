@@ -676,8 +676,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	const int32_t kClientWidth = 1200;
 	const int32_t kClientHeight = 720;
 
-	//ウィンドウサイズを表す構造体にクライアント領域を入れる
-	RECT wrc = { 0,0,kClientWidth,kClientHeight };
+	
 
 	//クライアント領域をもとに実際のサイズにwrcを変更してもらう
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
