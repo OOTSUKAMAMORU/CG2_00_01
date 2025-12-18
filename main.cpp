@@ -1329,6 +1329,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			{
 				//指定したSignalにたどり着いていないので、たどり着くまで待つようにイベントを設定する
 				fence->SetEventOnCompletion(fenceValue, fenceEvent);
+				
 				//イベント待つ
 				WaitForSingleObject(fenceEvent, INFINITE);
 			}
