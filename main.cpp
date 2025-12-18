@@ -1033,7 +1033,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//vertexData[5].texcoord = { 1.0f,1.0f };
 	//
 	//モデル読み込み
-	ModelData modelData = LoadObjFile("resources", "fence.obj");
+	ModelData modelData = LoadObjFile("resources", "plane.obj");
 
 	//頂点リソースを作る
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
@@ -1140,7 +1140,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	for (uint32_t index = 0;index < kNumInstance;++index)
 	{
 		transforms[index].scale = { 1.0f,1.0f,1.0f };
-		transforms[index].scale = { 0.0f,0.0f,0.0f };
+		transforms[index].rotate = { 0.0f,0.0f,0.0f };
 		transforms[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
 	}
 	
@@ -1193,6 +1193,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
 	indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
 
+
+	//Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
+
 	//ウィンドウの×ボタンが押されるまでループ
 	while (msg.message != WM_QUIT)
 	{
@@ -1244,20 +1247,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
-			for (uint32_t index = 0; index < kNumInstance; ++index)
-			{
-				transforms[index].scale = { 1.0f,1.0f,1.0f };
-				transforms[index].rotate = { 0.0f,0.0f,0.0f };
-				transforms[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
+			Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
+
 				for (uint32_t index = 0; index < kNumInstance; ++index)
 				{
 					Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 					Matrix4x4 worldMatrix = MakeAffineMatrix(transforms[index].scale, transforms[index].rotate, transforms[index].translate);
 					Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, worldViewProjectionMatrix);
-					instancingData[index].WVP = worldViewProjectionMatrix;
+					instancingData[index].WVP = viewProjectionMatrix;
 					instancingData[index].World = worldMatrix;
 				}
-			}
 
 			// TransitionBarrierを張る
 			commandList->ResourceBarrier(1, &barrier);
@@ -1380,6 +1379,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 #ifdef _DEBUG
 	debugCountroller->Release();
+
 #endif // _DEBUG
 	CloseWindow(hwnd);
 
