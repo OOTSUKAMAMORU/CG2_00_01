@@ -1107,8 +1107,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	ID3D12Resource* depthStencilResource = CreateDepthStencilTexTureResource(device, kClientWidth, kClientHeight);
 	ID3D12DescriptorHeap* dsvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
 	
+	//インスタンシング
 	const uint32_t kNumInstance = 10;
-	Microsoft::WRL::ComPtr<ID3D12Resource>instancingResource = CreateBufferResource(device, sizeof(TransformationMatrix) * kNumInstance);
+	//Microsoft::WRL::ComPtr<ID3D12Resource>instancingResource = CreateBufferResource(device, sizeof(TransformationMatrix) * kNumInstance);
+	ID3D12Resource*instancingResource = CreateBufferResource(device, sizeof(TransformationMatrix) * kNumInstance);
+
+	//書き込むためのアドレスを取得
 	TransformationMatrix* instancingData = nullptr;
 	instancingResource->Map(0, nullptr, reinterpret_cast<void**>(&instancingData));
 	//単位行列を書き込んでく
@@ -1134,7 +1138,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	instanceingSrvDesc.Buffer.StructureByteStride = sizeof(TransformationMatrix);
 	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = GetCPUDescriptorHandle(srvDescriptorHeap, desriptorSizeSRV, 3);
 	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap, desriptorSizeSRV, 3);
-	device->CreateShaderResourceView(instancingResource.Get(), &instanceingSrvDesc, instancingSrvHandleCPU);
+	//device->CreateShaderResourceView(instancingResource.Get(), &instanceingSrvDesc, instancingSrvHandleCPU);
+	device->CreateShaderResourceView(instancingResource, &instanceingSrvDesc, instancingSrvHandleCPU);
 
 	Transform transforms[kNumInstance];
 	for (uint32_t index = 0;index < kNumInstance;++index)
@@ -1344,6 +1349,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 
+	instancingResource->Release();
 	CloseHandle(fenceEvent);
 	materialResource->Release();
 	vertexResource->Release();
