@@ -866,6 +866,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[0].Descriptor.ShaderRegister = 0;
 	
+	D3D12_DESCRIPTOR_RANGE descriptorRangeForInstacing[1] = {};
+	descriptorRangeForInstacing[0].BaseShaderRegister = 0;
+	descriptorRangeForInstacing[0].NumDescriptors = 1;
+	descriptorRangeForInstacing[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	descriptorRangeForInstacing[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
 	//rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	//rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 	//rootParameters[1].Descriptor.ShaderRegister = 0;
@@ -876,17 +882,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 	
-	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-	//rootParameters[1].DescriptorTable.pDescriptorRanges = descriptorRangeForInstancing;
-	//rootParameters[1].DescriptorTable.NumDescriptorRanges=_countof(descriptorRangeForInstancing);
+	rootParameters[1].DescriptorTable.pDescriptorRanges = descriptorRangeForInstacing;
+	rootParameters[1].DescriptorTable.NumDescriptorRanges=_countof(descriptorRangeForInstacing);
 
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
-	descriptionRootSignature.pParameters = rootParameters;
-	descriptionRootSignature.NumParameters = _countof(rootParameters);
+	//rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	//rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	//rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
+	//rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
+	//descriptionRootSignature.pParameters = rootParameters;
+	//descriptionRootSignature.NumParameters = _countof(rootParameters);
 
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
 	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
