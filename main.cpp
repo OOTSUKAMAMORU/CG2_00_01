@@ -753,6 +753,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//2つ目を作る
 	device->CreateRenderTargetView(swapChainResources[1], &rtvDesc, rtvHandles[1]);
+	
 	//typedef struct D3D12_CPU_DESCRIPTOR_HANDLE
 	//{
 	//	SIZE_T ptr;
