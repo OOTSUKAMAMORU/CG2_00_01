@@ -1105,10 +1105,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			//TransitionBarrierの設定
 			D3D12_RESOURCE_BARRIER barrier{};
+
 			//今回のバリアはTransionBarrier
 			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+			
 			//Noneにしておく
 			barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+			
 			//バリアを張る対象のリソース。現在のバックバッファに対して行う
 			barrier.Transition.pResource = swapChainResources[backBufferIndex];
 
