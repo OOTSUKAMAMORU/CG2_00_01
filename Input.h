@@ -30,6 +30,4 @@ private:
 
 	//前回の全キーの状態
 	BYTE keyPre[256] = {};
-
-	//DirectInputのインスタンス
 };
