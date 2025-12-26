@@ -1,7 +1,9 @@
 #include"Input.h"
 #include <cassert>
 #pragma comment(lib,"dinput8.lib")
-#pragma comment(lib,"dxguid.lib")
+
+#include "WinApp.h"
+
 void Input::Initialize(WinApp* winApp)
 {
 	//借りてきたWinAppのインスタンスを記録
@@ -10,19 +12,20 @@ void Input::Initialize(WinApp* winApp)
 	HRESULT result;
 	//DirectInputのインスタンス生成
 	Microsoft::WRL::ComPtr<IDirectInput8>directInput = nullptr;
-	result = DirectInput8Create(winApp->GetHInstance(),DIRECTINPUT_VERSION IID_IDirectInput8, (void**)&diput, nullptr);
-	assert(SUCCEDED(result));
+	result = DirectInput8Create(winApp->GETHInstance(),DIRECTINPUT_VERSION,IID_IDirectInput8, 
+	(void**)&directInput, nullptr);
+	assert(SUCCEEDED(result));
 	
 	//キーボードデバイス生成
-	result = dinput->CreateDevice(GUID_SysKeyboard, &devkeyboard, NULL);
+	result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
 	assert(SUCCEEDED(result));
 	
 	//入力データ形式のセット
-	result = devkeyboard->SetDataFormat(&c_dfDIKeyboard);
+	result = keyboard->SetDataFormat(&c_dfDIKeyboard);
 	assert(SUCCEEDED(result));
 
 	//排他制御レベルのセット
-	result = devkeyboard->SetCooperativeLevel(winApp->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
+	result = keyboard->SetCooperativeLevel(winApp->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
 	assert(SUCCEEDED(result));
 }
 void Input::Update()

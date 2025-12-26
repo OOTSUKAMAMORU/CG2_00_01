@@ -39,8 +39,6 @@
     <ClInclude Include="d3dx12.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Input.h" />
-    <ClInclude Include="WinApp.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BC.cpp">
@@ -103,8 +101,6 @@
     <ClCompile Include="DirectXTexD3D12.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Input.cpp" />
-    <ClCompile Include="WinApp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CLInclude Include="BC.h">

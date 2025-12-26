@@ -1,26 +1,17 @@
-#pragma 
-#include<windows.h>
+#pragma once
 #include <wrl.h>
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
-#include "WinApp.h"
+
+class WinApp;
+
 class Input
 {
 public:
 	template<class T>using ComPtr = Microsoft::WRL::ComPtr<T>;
 public://メンバ関数
 	//初期化
-	void Initialize(WinApp*winApp);
-	//キーボードのデバイス
-	ComPtr<IDirectInputDevice8>keyboard;
-
-	//全キーの状態
-	BYTE key[256] = {};
-
-	//前回の全キーの状態
-	BYTE keyPre[256] = {};
-	
-	//DirectInputのインスタンス
+	void Initialize(WinApp* winApp);
 	ComPtr<IDirectInput8> directInput;
 
 	//更新
@@ -30,4 +21,15 @@ public://メンバ関数
 private:
 	//WindowsAPI
 	WinApp* winApp_ = nullptr;
+
+	//キーボードのデバイス
+	ComPtr<IDirectInputDevice8>keyboard;
+
+	//全キーの状態
+	BYTE key[256] = {};
+
+	//前回の全キーの状態
+	BYTE keyPre[256] = {};
+
+	//DirectInputのインスタンス
 };
