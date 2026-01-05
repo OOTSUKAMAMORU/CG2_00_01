@@ -374,6 +374,7 @@ ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes)
 	vertexResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
 	//vertexResourceDesc.Width = sizeof(Vector4) * 3;
 	vertexResourceDesc.Width = sizeInBytes;
+
 	//バッファの場合はこれらは1にする決まり
 	vertexResourceDesc.Height = 1;
 	vertexResourceDesc.DepthOrArraySize = 1;
