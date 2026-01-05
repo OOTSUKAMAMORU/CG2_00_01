@@ -26,6 +26,7 @@ public://定数
 	//ウィンドウクラスの設定
 	WNDCLASS wc{};
 private:
+	
 	//ウィンドウハンドル
 	HWND hwnd = nullptr;
 };
