@@ -537,6 +537,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 				Vector2 texcoord = texcoords[elementIndices[1] - 1];
 				texcoord.y = 1.0f - texcoord.y;
 				Vector3 normal = normals[elementIndices[2] - 1];
+				
 				//normal.x *= -1.0f;
 				VertexData vertex = { position,texcoord };
 				//modelData.vertices.push_back(vertex);
