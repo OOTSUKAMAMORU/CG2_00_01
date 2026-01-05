@@ -540,6 +540,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 				
 				//normal.x *= -1.0f;
 				VertexData vertex = { position,texcoord };
+				
 				//modelData.vertices.push_back(vertex);
 				//triangle[faceVertex] = { position,texcoord,normal };
 				triangle[faceVertex] = { position,texcoord };
