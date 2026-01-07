@@ -824,6 +824,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			commandList->DrawInstanced(3, 1, 0, 0);
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+			
 			//TransitionBarrierを張る
 			commandList->ResourceBarrier(1, &barrier);
 			hr = commandList->Close();
