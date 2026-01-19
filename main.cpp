@@ -308,13 +308,16 @@ ID3D12Resource* CreateDepthStencilTexTureResource(ID3D12Device* device, int32_t 
 	resourceDesc.SampleDesc.Count = 1;
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+	
 	//利用するHeapの設定
 	D3D12_HEAP_PROPERTIES heapProperties{};
 	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+	
 	//深海度のクリア設定
 	D3D12_CLEAR_VALUE depthClearValue{};
 	depthClearValue.DepthStencil.Depth = 1.0f;
 	depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	
 	//Resourceの生成
 	ID3D12Resource* resource = nullptr;
 	HRESULT hr = device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &depthClearValue, IID_PPV_ARGS(&resource));
@@ -407,6 +410,7 @@ ID3D12DescriptorHeap* CreateDescriptorHeap(
 	assert(SUCCEEDED(hr));
 	return descriptorHeap;
 }
+
 //1 Textureデータを読む
 DirectX::ScratchImage LoadTexture(const std::string& filePath)
 {
@@ -493,9 +497,11 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 	std::vector<Vector3> normals;
 	std::vector<Vector2> texcoords;
 	std::string line;
+	
 	//2
 	std::ifstream file(directoryPath + "/" + filename);
 	assert(file.is_open());
+	
 	//3
 	while (std::getline(file, line))
 	{
