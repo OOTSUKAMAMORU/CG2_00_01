@@ -23,6 +23,7 @@ public://定数
 	HWND GetHwnd() const { return hwnd; }
 	//メッセージの処理
 	bool ProcessMessage();
+	
 	//ウィンドウクラスの設定
 	WNDCLASS wc{};
 private:
