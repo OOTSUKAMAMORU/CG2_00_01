@@ -7,6 +7,7 @@
 #include<cassert>
 #include<dxgidebug.h>
 #include<dxcapi.h>
+#include<numbers>
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"d3d12.lib")
 #pragma	comment(lib,"dxgi.lib")
@@ -30,10 +31,20 @@ struct Vector3 {
 	float z;
 };
 
+struct Vector2 {
+	float x;
+	float y;
+};
+
 struct Transform {
 	Vector3 scale;
 	Vector3 rotate;
 	Vector3 translate;
+};
+
+struct VertexData {
+	Vector4 position;
+	Vector2 texcoord;
 };
 
 // 単位行列
@@ -696,7 +707,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	D3D12_HEAP_PROPERTIES uploadHeapProperties{};
 	uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
 
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(Vector4) * 3);
+	//球標示用
+	const uint32_t kSubdivision = 12;
+	const uint32_t kNumSphererVerices = kSubdivision * kSubdivision * 6;
+	float pi = std::numbers::pi_v<float>;
+
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * kNumSphererVerices);
 	
 	//頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
@@ -705,12 +721,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 
 	//使用するリソースのサイズは頂点3つ分のサイズ
-	vertexBufferView.SizeInBytes = sizeof(Vector4) * 3;
+	vertexBufferView.SizeInBytes = sizeof(VertexData) * kNumSphererVerices;
 	//1頂点あたりのサイズ
-	vertexBufferView.StrideInBytes = sizeof(Vector4);
+	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
 	//頂点リソースにデータを書き込む
-	Vector4* vertexData = nullptr;
+	VertexData* vertexData = nullptr;
 
 	//書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
@@ -818,7 +834,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 
-			commandList->DrawInstanced(3, 1, 0, 0);
+			commandList->DrawInstanced(kNumSphererVerices, 1, 0, 0);
 
 			//描画！。3頂点で１つのインスタンス。インスタンスについては今後
 			commandList->DrawInstanced(3, 1, 0, 0);
