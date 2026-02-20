@@ -4,7 +4,7 @@
 #include<format>
 #include<d3d12.h>
 #include<dxgi1_6.h>
-#include<cassert>
+#include<cassert>7
 #include<dxgidebug.h>
 #include<dxcapi.h>
 #pragma comment(lib,"dxguid.lib")
